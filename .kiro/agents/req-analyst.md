@@ -1,14 +1,12 @@
 ---
 name: req-analyst
 description: >
-  Analyses the intake-manifest.md against the existing codebase to 
-  produce a structured requirements.md with gap analysis and impact 
-  assessment. When epic.md exists, uses it as the authoritative source 
-  of business context, narrative, scope boundaries, and acceptance 
-  criteria rather than re-deriving them. When enrichment-log.md exists, 
-  pays special attention to enriched and new requirements.
-model: claude-sonnet-4.5
-tools: ["read", "write", "grep", "glob"]
+  Analyses requirements against the codebase to produce requirements.md 
+  with gap analysis. Reads code via Bitbucket MCP (preferred) or local 
+  filesystem (fallback). Reads epic.md for scope, enrichment-log.md for 
+  contested requirements, design-analysis.md for UI component status.
+model: claude-sonnet-4
+tools: ["read", "write", "grep", "glob", "@mcp-bitbucket"]
 toolsSettings:
   write:
     allowedPaths: [".kiro/specs/**"]
@@ -105,32 +103,32 @@ If epic.md exists, extract and hold in memory:
 
 ## STEP 3 — Codebase Gap Analysis
 
-For each functional requirement in intake-manifest.md:
+### Detect Code Source
+```
+@mcp-bitbucket available?
+  YES → read files directly from Bitbucket repo (preferred)
+        always up to date, reads committed code not local working copy
+  NO  → fall back to local grep/glob on filesystem
+```
 
-1. Search the codebase using grep and glob to determine:
+### Using Bitbucket MCP
+For each service in the Affected Services table, use @mcp-bitbucket to:
 
-   **IMPLEMENTED** — code exists and appears to satisfy the requirement
-   → Evidence: file path + class/method name
-   
-   **PARTIAL** — related code exists but needs extension
-   → Evidence: what exists + what is missing
-   
-   **MISSING** — nothing relevant found in codebase
-   → This is a full build item
-   
-   **CONFLICTS** — code exists but behaves differently 
-   than the requirement specifies
-   → Flag as technical conflict — needs design decision
+1. List files in the relevant repository path
+2. Read key files: main service class, domain POCOs, repository 
+   interfaces, SQL migrations, OpenAPI spec, existing test classes
+3. Search the repo for the feature keyword and related entity names
+   (catches related code outside the expected directory)
+4. Check if a feature branch already exists for this work
 
-2. For PARTIAL and CONFLICTS, read the relevant files more 
-   deeply to understand the exact delta between current 
-   behaviour and required behaviour.
-
-3. For each affected service, estimate change complexity:
-   - LOW: add a method or field to existing class
-   - MEDIUM: new class or significant method changes
-   - HIGH: new service, new data model, cross-service change
-   - VERY HIGH: architectural change requiring ARB review
+### Also read design-analysis.md if present
+If .kiro/specs/[feature]/design-analysis.md exists:
+- Component Breakdown Section 2: "Exists in Codebase?" column
+  refines your IMPLEMENTED/PARTIAL/MISSING assessment
+- Design Token Section 5: missing tokens = frontend infra task
+- Accessibility HIGH items automatically become MUST NFR requirements
+- DESIGN CONFLICT rows = treat as CONFLICT ⚠️ BLOCKED
+  (same gate as enrichment-log.md conflicts)
 
    ## STEP 3 — Codebase Gap Analysis (JustScan additions)
 

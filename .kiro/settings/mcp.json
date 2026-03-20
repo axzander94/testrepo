@@ -1,0 +1,39 @@
+{
+  "mcpServers": {
+
+    "mcp-atlassian": {
+      "command": "uvx",
+      "args": ["mcp-atlassian"],
+      "env": {
+        "JIRA_URL": "https://jira.your-company.com",
+        "JIRA_PERSONAL_TOKEN": "${JIRA_PAT}",
+        "JIRA_SSL_VERIFY": "false",
+        "CONFLUENCE_URL": "https://confluence.your-company.com",
+        "CONFLUENCE_PERSONAL_TOKEN": "${CONFLUENCE_PAT}",
+        "CONFLUENCE_SSL_VERIFY": "false"
+      }
+    },
+
+    "mcp-bitbucket": {
+      "command": "npx",
+      "args": ["-y", "@atlassian-dc-mcp/bitbucket"],
+      "env": {
+        "BITBUCKET_HOST": "bitbucket.your-company.com",
+        "BITBUCKET_API_TOKEN": "${BITBUCKET_PAT}"
+      }
+    },
+
+    "figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--figma-api-key=${FIGMA_API_KEY}",
+        "--stdio"
+      ],
+      "disabled": false,
+      "autoApprove": ["get_figma_data", "download_figma_images"]
+    }
+
+  }
+}

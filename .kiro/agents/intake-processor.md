@@ -1,14 +1,13 @@
 ---
 name: intake-processor
 description: >
-  Normalises raw input files from .kiro/intake/ into a structured 
-  intake-manifest.md. If idea-to-epic has already run, intake-processor 
-  enriches the existing manifest with additional detail from Confluence 
-  exports, Jira CSVs, or other documents rather than starting from 
-  scratch. Safe to run even when no external files exist — will validate 
-  and annotate what idea-to-epic produced.
-model: claude-sonnet-4.5
-tools: ["read", "write", "glob"]
+  Normalises requirements into intake-manifest.md. Supports LIVE mode 
+  (Confluence + Jira via MCP — preferred) and FILE mode (.kiro/intake/ 
+  exports — fallback). Also reads design-analysis.md from design-analyst 
+  if present. Runs in ENRICHMENT MODE when epic.md exists, BOOTSTRAP 
+  MODE otherwise.
+model: claude-sonnet-4
+tools: ["read", "write", "glob", "@mcp-atlassian"]
 toolsSettings:
   write:
     allowedPaths: [".kiro/specs/**"]
@@ -22,7 +21,33 @@ requirements. You only add, enrich, and flag conflicts.
 
 ---
 
-## STEP 1 — Detect the Starting State
+## STEP 1 — Detect Starting State and Source Mode
+```
+SOURCE CHECK:
+  Was a Confluence URL or Jira Epic ID provided?
+    YES → SOURCE MODE: LIVE — use @mcp-atlassian to fetch directly
+    NO  → Files present in .kiro/intake/?
+            YES → SOURCE MODE: FILE
+            NO  → Ask: provide Confluence URL, Jira Epic ID, 
+                  or drop files into .kiro/intake/
+
+DESIGN CHECK:
+  Does .kiro/specs/[feature]/design-analysis.md exist?
+    YES → Merge UI-XXX requirements into manifest tagged [FROM-FIGMA]
+    NO  → Proceed without UI requirements
+
+PIPELINE MODE:
+  .kiro/specs/[feature]/epic.md exists? → ENRICHMENT MODE
+  Missing?                              → BOOTSTRAP MODE
+```
+
+Report:
+```
+📂 Starting state:
+  Source mode:   LIVE (mcp-atlassian) / FILE (.kiro/intake/)
+  Design input:  design-analysis.md found (X UI reqs) / not present
+  Pipeline mode: ENRICHMENT / BOOTSTRAP
+```
 
 Before doing anything else, check what already exists:
 ```
@@ -168,6 +193,41 @@ Source files processed: [list]
 ### No Changes (already complete)
 - REQ-005, REQ-006, REQ-008: fully covered by epic.md, no additions
 ```
+
+
+---
+## STEP 2C — LIVE MODE (when Confluence URL or Jira ID provided)
+
+### From Confluence (use @mcp-atlassian)
+1. Fetch the full requirements page content
+2. If the page has child pages, fetch each child too
+3. Extract: requirement statements, acceptance criteria, user stories,
+   constraints, assumptions, out-of-scope sections, author, last-modified
+4. Auto-assign REQ-IDs where none present
+
+### From Jira (use @mcp-atlassian)
+1. Fetch the Epic and ALL child stories, tasks, sub-tasks
+2. Per issue extract: key, summary, type, status, priority, description,
+   acceptance criteria, labels, fix version, linked issues
+3. Map types: Story → requirement, Bug → constraint,
+   Task → implementation note, Sub-task → child of parent
+
+### Cross-referencing both sources
+- Jira story matches a Confluence requirement by topic → link them
+- Confluence req with no Jira story → flag UNTRACKED
+- Jira story with no Confluence requirement → flag UNDOCUMENTED
+
+### Merging design-analysis.md (always, regardless of source mode)
+If design-analysis.md exists:
+- UI-XXX requirements → add to Functional Requirements tagged [FROM-FIGMA]
+- HIGH severity accessibility items → add to NFRs as MUST [FROM-FIGMA]
+- Copy keys → add to a new "Content & Copy" section in the manifest
+
+### In ENRICHMENT MODE
+Same rules as FILE mode — CONFIRMS, ENRICHES, ADDS, FLAGS CONFLICTS.
+Provenance tags: CONFIRMED, ENRICHED, NEW [FROM-CONFLUENCE],
+NEW [FROM-JIRA], NEW [FROM-FIGMA], CONFLICT ⚠️
+Write enrichment-log.md documenting every change.
 
 ---
 

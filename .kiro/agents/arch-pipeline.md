@@ -37,63 +37,45 @@ needs from every prior stage.
 
 ---
 
-## STARTUP — Detect State and Entry Point
+## STARTUP — Detect State and Present Entry Points
 
-When invoked, before asking the user anything, scan the workspace:
-````
-SCAN 1: Does .kiro/specs/[feature-name]/ exist?
-  Check for: epic.md, intake-manifest.md, requirements.md, 
-             design.md, tasks.md, enrichment-log.md
+First scan:
+- .kiro/specs/[feature]/ for existing files
+- .kiro/intake/ for any dropped files
+- Report pipeline state clearly
 
-SCAN 2: Are there files in .kiro/intake/?
-  List them with file types.
+Then present:
 
-SCAN 3: What is the feature name?
-  Check if user provided it, or ask.
-````
+"How would you like to start?
 
-Then present the current state clearly:
-````
-📂 Pipeline State: [feature-name]
-══════════════════════════════════
-  epic.md:              ✅ exists / ❌ missing
-  intake files:         X files in .kiro/intake/ / none
-  intake-manifest.md:   ✅ exists / ❌ missing
-  enrichment-log.md:    ✅ exists (X conflicts) / ❌ missing
-  requirements.md:      ✅ READY / ⚠️ NEEDS REVIEW / 🔴 BLOCKED / ❌ missing
-  design.md:            ✅ exists / ❌ missing
-  tasks.md:             ✅ exists / ❌ missing
-  gherkin/:             ✅ X features / ❌ missing
-  arb-package/:         ✅ exists / ❌ missing
-````
+  A) Raw idea only
+     → idea-to-epic → intake-processor (LIVE via Confluence/Jira MCP)
 
-Then ask the user to confirm the entry point:
+  B) Confluence URL or Jira Epic ID available
+     → intake-processor LIVE mode (no file exports needed)
 
-"How would you like to start this pipeline?
+  C) Idea + Confluence/Jira sources
+     → idea-to-epic → intake-processor LIVE ENRICHMENT mode
 
-  **A)** I have a raw idea or verbal brief
-       → I'll run idea-to-epic, then continue the pipeline
-  
-  **B)** I have Confluence/Jira exports in .kiro/intake/
-       → I'll run intake-processor, then continue the pipeline
-  
-  **C)** Both A and B — I have an idea AND external documents
-       → I'll run idea-to-epic first, then intake-processor 
-         to enrich it, then continue the pipeline
-  
-  **D)** idea-to-epic already ran — continue from intake-processor
-  
-  **E)** intake-manifest.md is ready — continue from req-analyst
-  
-  **F)** requirements.md is ready — continue from tech-spec-writer
-  
-  **G)** Run a specific stage only: [which one?]"
+  D) Files already in .kiro/intake/ (offline / fallback)
+     → intake-processor FILE mode
+
+  E) Figma designs are ready (add to any path above)
+     → design-analyst runs first, UI reqs merged by intake-processor
+     → If designs not ready yet, skip — run design-analyst later
+
+  F) Pipeline already started — continue from:
+     [show which files exist and suggest next stage]
+
+  G) Sync steering files from Confluence first
+     → confluence-sync (run when Confluence docs have been updated)
 
 Also ask:
-- Feature name (if not already known)
-- Relevant source directories in the codebase (for req-analyst 
-  and tech-spec-writer)
-- Any deadline or ARB meeting date to be aware of
+- Feature name
+- Confluence URL or Jira Epic ID (for B, C)
+- Figma frame URL (for E — skip if not ready)
+- Bitbucket repo paths (for req-analyst and tech-spec-writer)
+- Create Jira sub-tasks after tasks.md? YES / NO"
 
 ---
 
@@ -122,15 +104,56 @@ When complete return:
 - If YES: surface them to the user. Ask: resolve now or proceed 
   with documented assumptions?
 - Do not proceed to Stage 1 if user says to resolve first.
+---
+### STAGE 0a — Confluence Sync (Entry Point G only)
+
+Run ONLY when user explicitly selects G or says steering files 
+are out of date. Not part of the regular per-feature pipeline.
+
+Subagent: confluence-sync
+Prompt: "Sync steering files from Confluence.
+         Tech stack page: [URL]
+         Architecture standards page: [URL]  
+         Project overview page: [URL]
+         Update .kiro/steering/ files to match current Confluence content."
+
+ ### After Stage 0 (idea-to-epic)
+The idea-to-epic agent handles its own publish interaction.
+Wait for user to confirm PUBLISHED or SKIPPED before advancing to Stage 1.
+Do not auto-advance — the user may need time to review and modify.
+
+
+---
+### STAGE 0b — Design Analysis (Entry Point E — OPTIONAL)
+
+Skip entirely if no Figma URL provided. Log:
+"ℹ️ No Figma URL provided — skipping design-analyst.
+ Run /agent swap design-analyst when designs are ready."
+
+Subagent: design-analyst
+Prompt: "Analyse Figma design for feature: [name]
+         URL: [figma URL]
+         Cross-reference: .kiro/specs/[name]/epic.md (if exists)
+         Save to: .kiro/specs/[name]/design-analysis.md
+         Return: new UI reqs count, design conflicts, accessibility issues"
+
+Gate: if DESIGN CONFLICT ⚠️ rows found → surface to user, ask to 
+resolve with designer before intake-processor runs.
 
 ---
 
 ### STAGE 1 — Intake Processing (Entry Points B, C, D)
 
-**Subagent: intake-processor**
 
-Prompt:
-"Process intake files for feature: [name]
+Subagent: intake-processor
+Prompt: "Process requirements for feature: [name]
+         Source: LIVE — Confluence: [URL], Jira Epic: [ID]
+             OR  FILE — .kiro/intake/
+         Also read .kiro/specs/[name]/design-analysis.md if present
+         and merge UI-XXX requirements tagged [FROM-FIGMA].
+         Check for epic.md → ENRICHMENT or BOOTSTRAP mode.
+         Return: source mode, pipeline mode, req counts by tag,
+         UNTRACKED/UNDOCUMENTED counts, conflicts."
 
 Mode detection: check whether epic.md exists at 
 .kiro/specs/[name]/epic.md and run in the appropriate mode 
@@ -268,6 +291,10 @@ Return:
 - Did tech-spec-writer discover NEW ARB triggers not in requirements.md?
   → If yes, route to arb-prep before gherkin-writer
 
+  ### After Stage 3 (tech-spec-writer)
+The tech-spec-writer agent handles its own publish + Jira sub-task interaction.
+Wait for user to confirm before advancing to Stage 4.
+
 ---
 
 ### STAGE 4 — Gherkin Test Cases (parallel with Stage 3)
@@ -292,6 +319,12 @@ Return:
 - Story count
 - Total scenario count by type (happy/edge/error/auth/NFR)
 - Coverage gaps identified"
+
+### After Stage 4 (gherkin-writer)
+The gherkin-writer agent handles its own Jira test case + publish interaction.
+Wait for user to confirm before advancing to Stage 5 (arb-prep).
+
+These are human gates — the pipeline does not auto-advance past them.
 
 ---
 

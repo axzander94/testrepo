@@ -431,15 +431,124 @@ Questions without owners are decisions that will never get made.]
 
 ---
 
-## STEP 3 — Write Intake Manifest
+## STEP 3 — Review, Modify, and Publish
 
-After writing epic.md, also generate:
-`.kiro/specs/[feature-name]/intake-manifest.md`
+After writing epic.md, present the generated document summary 
+to the user and enter an interactive review loop.
 
-Extract all REQ-IDs from the acceptance criteria table and 
-all stories from Section 5, and write them in the standard 
-intake-manifest format so the pipeline can continue immediately 
-without any Confluence exports.
+### 3a — Present Summary
+
+Output a structured preview — do NOT dump the full document, 
+give the user enough to decide if it needs changes:
+```
+📄 EPIC GENERATED: [feature-name]
+════════════════════════════════════════════════
+
+SECTION PREVIEW:
+  1. Problem Statement:     "[first 2 sentences]..."
+  2. Solution Explanation:  "[first sentence]..."
+  3. MVPs defined:          [X] — MVP1: [name], MVP2: [name]
+  4. Narrative:             ✅ written
+  5. Epic Story:            [X] stories — MUST: X, SHOULD: X
+  6. In/Out of Scope:       In: X items | Out: X items
+  7. Business Value:        [X] metrics defined
+  8. User Flow:             [X] flows documented
+  9. BPMN Diagram:          ✅ Mermaid diagram included
+  10. Acceptance Criteria:  [X] MUST | [X] SHOULD | [X] COULD
+  11. User Scenarios:       [X] scenarios
+  12. Risks:                🔴 HIGH: X | 🟡 MEDIUM: X | 🟢 LOW: X
+  13. Open Questions:       [X] — owners assigned: [X/X]
+
+Full document: .kiro/specs/[feature-name]/epic.md
+```
+
+### 3b — Ask the User
+```
+What would you like to do?
+
+  A) Publish to Confluence as-is
+     → Tell me the target Confluence page URL or space/page title
+       e.g. "publish to JS space under Product/Epics/[feature-name]"
+
+  B) Modify specific sections first, then publish
+     → Tell me which sections to change and what to adjust
+
+  C) Modify specific sections, review again, then decide on publishing
+
+  D) Keep locally only — do not publish to Confluence
+
+  E) Continue pipeline without publishing
+     → moves to intake-processor / req-analyst
+```
+
+### 3c — Handle Modifications (if B or C)
+
+If the user requests modifications:
+1. Apply ONLY the requested changes to the specific sections named
+2. Do NOT regenerate other sections
+3. Show a diff-style summary of what changed:
+```
+   ✏️ MODIFICATIONS APPLIED:
+     Section 3 (MVPs): Added MVP3 for analytics dashboard
+     Section 6 (Out of Scope): Added "bulk epic creation" as excluded
+     Section 13 (Open Questions): Q-003 assigned to [name]
+```
+4. Ask again: "Ready to publish, or any further changes?"
+
+Repeat until user confirms ready to publish or chooses to skip.
+
+### 3d — Publish to Confluence (if A, B, or C confirmed)
+
+When user confirms publish:
+
+1. Ask for target location if not already provided:
+```
+   "Where should I publish this?
+   
+   Options:
+   A) Create a NEW page under a parent:
+      → provide parent page URL or space/page path
+        e.g. https://confluence.company.com/display/JS/Product-Epics
+   
+   B) UPDATE an existing page:
+      → provide the existing page URL to overwrite"
+```
+
+2. Use @mcp-atlassian to publish:
+   - Format the epic.md content as Confluence wiki markup
+   - Include all sections with proper Confluence headings
+   - Mermaid diagrams → publish as code blocks with ```mermaid fence
+     (Confluence Mermaid macro if available, otherwise code block)
+   - Tables → convert to Confluence table format
+   - Set page title to: "Epic: [Feature Name]"
+   - Add label: `epic`, `[feature-name]`, `draft`
+
+3. Confirm success:
+```
+   ✅ PUBLISHED TO CONFLUENCE
+   ════════════════════════════
+   Page: "Epic: [Feature Name]"
+   URL:  https://confluence.company.com/display/JS/Epic-[feature-name]
+   Space: [space key]
+   Status: Published (labelled: epic, draft)
+   
+   ▶️ Next step: /agent swap intake-processor
+      (or continue with arch-pipeline)
+```
+
+4. If publish fails, report the error clearly and keep the local 
+   epic.md safe. Never lose work due to a publish failure.
+
+### 3e — Skip Publish (if D or E)
+```
+ℹ️ Epic saved locally only.
+   Path: .kiro/specs/[feature-name]/epic.md
+   
+   To publish later: /agent swap idea-to-epic
+   and say "publish existing epic for [feature-name] to Confluence"
+   
+   ▶️ Next step: /agent swap intake-processor
+```
 
 ---
 
