@@ -107,6 +107,50 @@ these last. Note the assumption used and tag the section
 ---
 
 ## STEP 3 — Deep Codebase Read
+## Codebase Access — Priority Order
+
+Always attempt in this order:
+
+### 1. Bitbucket MCP (primary)
+Use @mcp-bitbucket to read files directly from the remote repo.
+Preferred because it reads committed code, not a local working copy.
+
+### 2. Local filesystem (fallback)
+If Bitbucket MCP is unavailable, times out, or returns an error:
+- Fall back to local grep/glob on the filesystem automatically
+- Do NOT ask the user to fix the MCP connection — just proceed
+- Note in the output summary which mode was used:
+```
+  📂 Codebase source: Bitbucket MCP / Local filesystem (fallback)
+```
+
+### 3. If neither is available
+If both Bitbucket MCP and local filesystem reads fail or return 
+no results for the provided paths:
+- Do not fabricate codebase findings
+- Mark all requirements as MISSING in the gap analysis
+- Flag clearly:
+```
+  ⚠️ CODEBASE UNAVAILABLE
+  Neither Bitbucket MCP nor local filesystem returned results for:
+  [paths provided]
+  
+  All requirements marked MISSING by default.
+  Gap analysis will need re-running once codebase is accessible.
+```
+- Continue writing requirements.md / design.md with the caveat noted
+- Do NOT block the pipeline — a human can re-run the gap analysis later
+```
+
+---
+
+That is the only change needed on top of what was already proposed. The permission model is:
+```
+src/**  READ  → allowed for req-analyst and tech-spec-writer
+               (Bitbucket MCP first, local filesystem if MCP fails)
+
+src/**  WRITE → blocked for ALL agents, no exceptions
+               (lives in agent-constraints.md universally)
 
 Use @mcp-bitbucket to read the exact files listed in requirements.md 
 Affected Components table:
@@ -167,10 +211,10 @@ These are already decided — do not revisit them.]
 
 | Component | File Path | Change Type | REQ-IDs | Complexity |
 |-----------|-----------|-------------|---------|------------|
-| PaymentService | src/services/payments/PaymentService.java | Modify | REQ-001, REQ-002 | MEDIUM |
-| Payment (entity) | src/services/payments/domain/Payment.java | Modify | REQ-001 | LOW |
-| RefundRecord (new) | src/services/payments/domain/RefundRecord.java | Create | REQ-001 | MEDIUM |
-| V20260319__refund.sql | src/main/resources/db/migration/ | Create | REQ-001 | LOW |
+| PaymentService | src/Backoffice/Services/GiftCatalog/GiftWaveService.cs | Modify | REQ-001, REQ-002 | MEDIUM |
+| Payment (entity) | ssrc/Backoffice/Services/GiftCatalog/GiftWaveService.cs | Modify | REQ-001 | LOW |
+| RefundRecord (new) | src/services/gifts/domain/GiftWaveService.cs | Create | REQ-001 | MEDIUM |
+| 20260319_001_add_wave_preview.sql | src/main/resources/db/migration/ | Create | REQ-001 | LOW |
 
 ---
 
@@ -322,7 +366,6 @@ sequenceDiagram
     participant PS as PaymentService
     participant PR as PaymentRepository
     participant RR as RefundRepository
-    participant KP as KafkaProducer
 
     C->>PC: POST /payments/{id}/refunds
     PC->>PS: initiateRefund(paymentId, request, userId)
@@ -554,7 +597,7 @@ If no epic.md, phase by: DB → Domain → Service → API → Frontend → Test
 - [ ] **TASK-0XX** [TEST] Integration test: full refund flow
   REQ-IDs: REQ-001 through REQ-005
   Create: `src/test/.../integration/RefundIntegrationTest.java`
-  Use Testcontainers: PostgreSQL + Kafka
+  Use SQL Server integration test fixture
   Cover: happy path end-to-end + at least 2 error paths
   ✅ AC: Test passes in CI, Kafka event asserted
   ⏱ Estimate: 3h
@@ -564,7 +607,6 @@ If no epic.md, phase by: DB → Domain → Service → API → Frontend → Test
   Deploy to dev environment
   Verify: POST /api/v1/payments/{id}/refunds returns 201
   Verify: refund record appears in DB
-  Verify: Kafka event visible in topic
   Verify: metric payment.refund.initiated increments
   ✅ AC: All 4 checks pass
   ⏱ Estimate: 1h

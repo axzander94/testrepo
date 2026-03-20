@@ -10,7 +10,9 @@ model: claude-sonnet-4
 tools: ["read", "write", "glob", "@mcp-atlassian"]
 toolsSettings:
   write:
-    allowedPaths: [".kiro/specs/**"]
+    allowedPaths:
+  - ".kiro/specs/**/intake-manifest.md"
+  - ".kiro/specs/**/enrichment-log.md"
 ---
 
 You are a requirements analyst specialising in normalising mixed-format 

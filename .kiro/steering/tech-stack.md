@@ -71,4 +71,4 @@ inclusion: always
 - Direct DB access across service boundaries
 - Personal or sensetive data storage
 - Synchronous HTTP between backend services in critical paths
-- Hardcoded configuration — use ConfigMaps/Secrets
+- Hardcoded configuration — use AWS Secrets Manager or Parameter Store

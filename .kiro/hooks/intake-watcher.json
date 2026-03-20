@@ -1,11 +1,7 @@
 {
-  "hooks": [
-    {
-      "name": "process-new-requirements",
-      "description": "When a file is dropped into intake/, prompt user to trigger the pipeline",
-      "event": "onSave",
-      "pattern": ".kiro/intake/**/*",
-      "instructions": "A new file has been dropped into the intake folder. Read the file and summarise: file name, content type (Confluence HTML export, Jira CSV, plain text, PDF, architecture doc), and approximate requirement count. Then ask the user: (1) what is the feature name for this intake batch, (2) which source directories in the codebase are most relevant, (3) should the full pipeline run now or just intake-processor alone. Do not start any pipeline agent without explicit user confirmation."
-    }
-  ]
+  "name": "process-new-requirements",
+  "description": "Triggered when a file is dropped into intake/",
+  "event": "onSave",
+  "pattern": ".kiro/intake/**/*",
+  "instructions": "A new file has been dropped into the intake folder. Read the file and summarise: file name, content type (Confluence HTML export, Jira CSV, plain text, PDF, architecture doc), and approximate requirement count. Then ask: (1) feature name for this batch, (2) relevant source directories in the codebase, (3) do you also have a Confluence URL or Jira Epic ID to fetch live via MCP? If yes, intake-processor will run in LIVE+FILE combined mode and merge both sources. (4) run full pipeline now or just intake-processor? Do not start without explicit confirmation."
 }

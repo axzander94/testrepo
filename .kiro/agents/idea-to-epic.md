@@ -331,9 +331,9 @@ These feed directly into the gherkin-writer agent.]
 **Functional:**
 | ID | EARS Statement | Priority |
 |----|---------------|----------|
-| AC-001 | WHEN a customer submits a valid refund request THE system SHALL create a refund record with status PENDING within 2 seconds | MUST |
-| AC-002 | WHEN a refund request exceeds the original payment amount THE system SHALL reject the request with error code EXCEEDS_ORIGINAL | MUST |
-| AC-003 | WHEN a refund is successfully initiated THE system SHALL send a confirmation notification to the customer's registered email | SHOULD |
+| AC-001 | WHEN a content_manager publishes a campaign THE system SHALL set status to Published within 3 seconds | MUST |
+| AC-002 | WHEN a wave start date has passed THE system SHALL prevent modification of wave configuration | MUST |
+| NFR-002 | Security | WHEN consumer age verification data is processed THE system SHALL not persist raw identity documents | 100% |
 
 **Non-Functional:**
 | ID | Category | Statement | Target |
@@ -426,7 +426,7 @@ Questions without owners are decisions that will never get made.]
 - [ ] Feature flag in place for gradual rollout
 - [ ] Runbook updated with new failure modes
 - [ ] Observability: metrics, alerts and dashboards live
-- [ ] Security review sign-off (if PII or payment data involved)
+- [ ] Security review sign-off (if PII, age verification, or PMI database data involved)
 ```
 
 ---

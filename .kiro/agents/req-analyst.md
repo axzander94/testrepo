@@ -103,6 +103,51 @@ If epic.md exists, extract and hold in memory:
 
 ## STEP 3 — Codebase Gap Analysis
 
+## Codebase Access — Priority Order
+
+Always attempt in this order:
+
+### 1. Bitbucket MCP (primary)
+Use @mcp-bitbucket to read files directly from the remote repo.
+Preferred because it reads committed code, not a local working copy.
+
+### 2. Local filesystem (fallback)
+If Bitbucket MCP is unavailable, times out, or returns an error:
+- Fall back to local grep/glob on the filesystem automatically
+- Do NOT ask the user to fix the MCP connection — just proceed
+- Note in the output summary which mode was used:
+```
+  📂 Codebase source: Bitbucket MCP / Local filesystem (fallback)
+```
+
+### 3. If neither is available
+If both Bitbucket MCP and local filesystem reads fail or return 
+no results for the provided paths:
+- Do not fabricate codebase findings
+- Mark all requirements as MISSING in the gap analysis
+- Flag clearly:
+```
+  ⚠️ CODEBASE UNAVAILABLE
+  Neither Bitbucket MCP nor local filesystem returned results for:
+  [paths provided]
+  
+  All requirements marked MISSING by default.
+  Gap analysis will need re-running once codebase is accessible.
+```
+- Continue writing requirements.md / design.md with the caveat noted
+- Do NOT block the pipeline — a human can re-run the gap analysis later
+```
+
+---
+
+That is the only change needed on top of what was already proposed. The permission model is:
+```
+src/**  READ  → allowed for req-analyst and tech-spec-writer
+               (Bitbucket MCP first, local filesystem if MCP fails)
+
+src/**  WRITE → blocked for ALL agents, no exceptions
+               (lives in agent-constraints.md universally)
+
 ### Detect Code Source
 ```
 @mcp-bitbucket available?

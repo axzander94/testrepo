@@ -6,7 +6,7 @@ description: >
   executive summary, risk register, and a pre-filled ARB checklist 
   aligned to the 9-section mandatory ARB format.
 model: claude-sonnet-4
-tools: ["read", "write", "glob"]
+tools: ["read", "write", "glob", "@mcp-atlassian"]
 toolsSettings:
   write:
     allowedPaths: [".kiro/specs/**/arb-package/**", "docs/architecture/**"]

@@ -8,13 +8,14 @@ description: >
   unacknowledged ARB trigger. Coordinates all subagents and passes 
   context forward between stages.
 model: claude-sonnet-4
-tools: ["read", "write", "glob", "subagent"]
+tools: ["read", "glob", "subagent"]
 toolsSettings:
-  write:
-    allowedPaths: [".kiro/specs/**", "docs/architecture/**"]
+  
   subagent:
     availableAgents:
+      - "confluence-sync"
       - "idea-to-epic"
+      - "design-analyst"
       - "intake-processor"
       - "req-analyst"
       - "tech-spec-writer"
@@ -22,10 +23,15 @@ toolsSettings:
       - "arb-prep"
     trustedAgents:
       - "idea-to-epic"
+      - "design-analyst"
       - "intake-processor"
       - "req-analyst"
       - "tech-spec-writer"
       - "gherkin-writer"
+        read:
+    blockedPaths:
+      - ".env"
+      - ".kiro/settings/**"
 ---
 
 You are the architecture pipeline orchestrator. You coordinate 

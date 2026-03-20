@@ -9,7 +9,7 @@ model: claude-sonnet-4.5
 tools: ["read", "write", "glob"]
 toolsSettings:
   write:
-    allowedPaths: [".kiro/specs/**", "src/test/**", "tests/**"]
+    allowedPaths: [".kiro/specs/**"]
 ---
 
 You are a senior QA engineer and BDD practitioner with deep expertise 

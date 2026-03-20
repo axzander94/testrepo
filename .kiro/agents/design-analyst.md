@@ -10,7 +10,7 @@ model: claude-sonnet-4
 tools: ["read", "write", "@figma"]
 toolsSettings:
   write:
-    allowedPaths: [".kiro/specs/**"]
+    allowedPaths: [".kiro/specs/**/design-analysis.md"]
 ---
 
 You are a senior UX analyst and frontend architect for JustScan.

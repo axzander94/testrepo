@@ -31,11 +31,11 @@
       "instructions": "When epic.md is saved, verify: (1) Problem Statement is present and not generic, (2) at least one Success Metric with a numeric target exists, (3) In Scope and Out of Scope sections are both non-empty, (4) at least one user story with acceptance criteria in Gherkin format exists, (5) Definition of Done checklist is present. Output ✅ EPIC READY FOR PIPELINE or ⚠️ INCOMPLETE with specific gaps."
     },
     {
-  "name": "validate-epic-completeness",
+  "name": "validate-no-credentials-in-specs",
   "event": "onSave",
-  "pattern": ".kiro/specs/**/epic.md",
-  "instructions": "When epic.md is saved, verify all 13 required sections are present and non-empty: Problem Statement, Solution Explanation, Epic Decomposition into MVPs, Narrative, Epic Story, In Scope / Out of Scope, Business Value, High-Level User Flow, BPMN Diagram, Acceptance Criteria, User Scenarios, Risks, Open Questions. Also check: (1) Problem Statement is between 200-300 words, (2) at least one MVP is defined, (3) every Open Question has an owner and due date, (4) Risk table has at least one entry, (5) BPMN diagram is a valid Mermaid block. Output ✅ EPIC READY FOR PIPELINE or ⚠️ INCOMPLETE with the exact section names and specific checks that failed."
-    }
+  "pattern": ".kiro/specs/**/*.md",
+  "instructions": "When any spec file is saved, scan for patterns that should never appear: (1) strings matching token/password/secret patterns (long alphanumeric strings after = or : characters), (2) email addresses that look real rather than placeholder (not containing 'example', 'placeholder', 'consumer', 'user'), (3) any text that looks like a real person's full name in a context suggesting real consumer data rather than a persona name. If found, output: 🔴 CREDENTIAL/PII WARNING — [file name]: [description]. Do not output the actual sensitive value. Do not block the save — only warn."
+}
   ]
   
 }
