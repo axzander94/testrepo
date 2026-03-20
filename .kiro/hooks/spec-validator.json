@@ -1,0 +1,25 @@
+{
+  "hooks": [
+    {
+      "name": "validate-design-completeness",
+      "description": "Validates design.md has all required sections when saved",
+      "event": "onSave",
+      "pattern": ".kiro/specs/**/design.md",
+      "instructions": "When design.md is saved, check it contains ALL sections required by spec-standards.md: Overview, Affected Components, Data Model Changes, API Changes, Sequence Diagrams (Mermaid), Method Signatures, Observability, Error Handling Strategy, and Testing Requirements. For each section check it is present AND non-empty AND contains no placeholder text like '...' or 'TODO'. Output ✅ DESIGN READY if all sections pass. Output ⚠️ INCOMPLETE with an exact list of failing sections if any check fails. Do not modify the file."
+    },
+    {
+      "name": "validate-tasks-sequencing",
+      "description": "Validates tasks.md has correct structure and sequencing when saved",
+      "event": "onSave",
+      "pattern": ".kiro/specs/**/tasks.md",
+      "instructions": "When tasks.md is saved, verify: (1) first task is writing failing tests, (2) last task is integration or smoke test, (3) every task has a label [BE], [FE], [DB], [INFRA] or [TEST], (4) every task that lists dependencies references a valid TASK-ID that exists in the file, (5) no single task description implies more than 4 hours of work. Output ✅ TASKS READY or ⚠️ ISSUES FOUND with specific line-level callouts."
+    },
+    {
+      "name": "validate-arb-checklist",
+      "description": "Validates ARB package completeness when ADR.md is saved",
+      "event": "onSave",
+      "pattern": ".kiro/specs/**/arb-package/ADR.md",
+      "instructions": "When ADR.md is saved inside an arb-package folder, verify all 10 mandatory sections from arch-standards.md are present: Executive Summary, Business Context, Requirements Traceability Table, Proposed Solution with Mermaid diagram, Sequence Diagrams, Alternatives Considered (minimum 2), NFR Analysis, Risk Register, Phased Implementation Plan, and Open Questions. Also verify the Requirements Traceability Table contains at least one REQ-ID reference. Output ✅ ARB READY or 🔴 NOT READY with exact missing sections listed."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+.kiro/intake/requirements/*
+.kiro/intake/jira-export/*
+# Keep the folder structure but not the content
+!.kiro/intake/requirements/.gitkeep
+!.kiro/intake/jira-export/.gitkeep

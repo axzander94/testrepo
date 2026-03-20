@@ -1,0 +1,11 @@
+{
+  "hooks": [
+    {
+      "name": "process-new-requirements",
+      "description": "When a file is dropped into intake/, prompt user to trigger the pipeline",
+      "event": "onSave",
+      "pattern": ".kiro/intake/**/*",
+      "instructions": "A new file has been dropped into the intake folder. Read the file and summarise: file name, content type (Confluence HTML export, Jira CSV, plain text, PDF, architecture doc), and approximate requirement count. Then ask the user: (1) what is the feature name for this intake batch, (2) which source directories in the codebase are most relevant, (3) should the full pipeline run now or just intake-processor alone. Do not start any pipeline agent without explicit user confirmation."
+    }
+  ]
+}
