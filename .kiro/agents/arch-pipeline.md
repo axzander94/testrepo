@@ -28,8 +28,8 @@ toolsSettings:
       - "req-analyst"
       - "tech-spec-writer"
       - "gherkin-writer"
-        read:
-    blockedPaths:
+read:
+   blockedPaths:
       - ".env"
       - ".kiro/settings/**"
 ---

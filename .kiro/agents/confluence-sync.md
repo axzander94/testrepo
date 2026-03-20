@@ -71,41 +71,10 @@ project-knowledge.md → synced from [URL] (last modified: [date])
 ⚠️  Sections kept from existing steering files (not in Confluence):
   project-knowledge.md: "How to Read Intake Files" section (kept as-is)
   project-knowledge.md: "Governance" table (kept as-is — fill in manually)
-
-▶️  Review the updated files before running any pipeline agents.
-```
 ```
 
 ---
 
 ## Part 4: Updated Pipeline With All MCP
-```
-💡 Idea or brief
-      │
-      ▼
-[confluence-sync]          ← Run once at setup or after Confluence changes
-(keeps steering files      steering files always reflect latest Confluence
- current from Confluence)
-      │
-      ▼
-idea-to-epic               ← no MCP needed — generates epic.md
-      │
-      ├──────────────────────────────────────┐
-      ▼                                      ▼
-design-analyst ◄── Figma MCP          intake-processor ◄── Confluence + Jira MCP
-(OPTIONAL — only when                  Fetches requirements pages live
- Figma frames are ready)               Fetches Jira Epic + all child stories
-      │                                Merges with epic.md if it exists
-      └──────────────┬───────────────────────┘
-                     ▼
-               req-analyst ◄── Bitbucket MCP
-               Reads .cs files, migrations, tests
-               directly from Bitbucket repo
-                     │
-               tech-spec-writer ◄── Bitbucket + Jira MCP
-               Deep reads code via Bitbucket
-               Creates Jira sub-tasks when done
-                     │
-               gherkin-writer
-                     │
-               arb-prep
+
+▶️  Review the updated files before running any pipeline agents.
