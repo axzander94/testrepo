@@ -1,31 +1,17 @@
-# 1. Export from Confluence
-#    Page → Export → HTML → save to:
-.kiro/intake/requirements/feature-x-confluence.html
+# Start from a raw idea
+/agent swap idea-to-epic
 
-# 2. Export from Jira  (optional)
-#    Epic → Export → CSV → save to:
-.kiro/intake/jira-export/PROJ-1234-export.csv
+I want to add a self-service refund feature for customers. 
+Currently refunds require a support agent to manually process them 
+in the back office. We lose about 2 hours of support time daily on 
+this. Customers complain about the 3-day wait. The system is our 
+payments microservice in src/services/payments/.
 
-# 3. Drop any existing architecture docs
-.kiro/intake/architecture/existing-ADR-payments.md
-
-# 4. Switch to the pipeline agent in Kiro
+# After epic is generated, run the full pipeline
 /agent swap arch-pipeline
 
-# 5. Trigger the pipeline
-Run the full architecture pipeline for:
-- Feature name: payment-refund-flow
-- Source directories: src/services/payments/, src/services/ledger/
-- All intake files are ready in .kiro/intake/
+# After tech-spec-writer completes, generate test cases
+/agent swap gherkin-writer
 
-# 6. Review outputs
-.kiro/specs/payment-refund-flow/
-├── intake-manifest.md      ← normalised requirements
-├── requirements.md         ← structured + gap analysis
-├── design.md               ← technical blueprint
-├── tasks.md                ← developer task list
-└── arb-package/
-    ├── ADR.md              ← full architecture decision record
-    ├── executive-summary.md
-    ├── risk-register.md
-    └── arb-checklist.md    ← fill in sign-offs, submit to ARB
+Read .kiro/specs/self-service-refund/ and generate full Gherkin 
+coverage for all stories.
