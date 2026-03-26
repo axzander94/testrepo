@@ -1,3 +1,0 @@
-.kiro/intake/requirements/*
-# Keep the folder structure but not the content
-!.kiro/intake/requirements/.gitkeep

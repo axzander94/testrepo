@@ -1,7 +1,0 @@
-{
-  "name": "process-new-requirements",
-  "description": "Triggered when a file is dropped into intake/",
-  "event": "onSave",
-  "pattern": ".kiro/intake/**/*",
-  "instructions": "A new file has been dropped into the intake folder. Read the file and summarise: file name, content type (Confluence HTML export, Jira CSV, plain text, PDF, architecture doc), and approximate requirement count. Then ask: (1) feature name for this batch, (2) relevant source directories in the codebase, (3) do you also have a Confluence URL or Jira Epic ID to fetch live via MCP? If yes, intake-processor will run in LIVE+FILE combined mode and merge both sources. (4) run full pipeline now or just intake-processor? Do not start without explicit confirmation."
-}
